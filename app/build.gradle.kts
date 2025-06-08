@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.example.suki"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.suki"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -79,6 +79,15 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.material)
     implementation("androidx.compose.material:material-icons-extended:1.5.0")
+
+    // Navigation Compose
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // Dependencias para Glide y AppCompat
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.core:core-ktx:1.10.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 }
 
 tasks.withType<Test> {

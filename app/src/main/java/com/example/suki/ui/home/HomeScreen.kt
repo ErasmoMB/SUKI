@@ -1,6 +1,7 @@
 package com.example.suki.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -19,7 +20,7 @@ import coil.compose.AsyncImage
 import com.example.suki.data.model.Anime
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(viewModel: HomeViewModel = viewModel(), onAnimeClick: (Int) -> Unit) {
     val animes by viewModel.animes.collectAsState()
     var search by remember { mutableStateOf("") }
 
@@ -62,19 +63,20 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
             contentPadding = PaddingValues(4.dp)
         ) {
             items(animes) { anime ->
-                AnimeCard(anime)
+                AnimeCard(anime, onClick = { onAnimeClick(anime.id) })
             }
         }
     }
 }
 
 @Composable
-fun AnimeCard(anime: Anime) {
+fun AnimeCard(anime: Anime, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .padding(4.dp)
             .fillMaxWidth()
-            .aspectRatio(0.7f),
+            .aspectRatio(0.7f)
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = Color(0xFF23234A))
     ) {
         Column(

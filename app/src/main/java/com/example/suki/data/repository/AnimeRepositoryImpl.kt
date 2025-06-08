@@ -35,57 +35,84 @@ class AnimeRepositoryImpl : AnimeRepository {
         val response = URL(url).readText()
         val json = JSONObject(response).getJSONObject("data")
         AnimeDetail(
-            id = json.getInt("mal_id"),
             title = json.getString("title"),
+            score = json.optDouble("score").toFloat().takeIf { !json.isNull("score") },
+            episodes = json.optInt("episodes"),
             synopsis = json.getString("synopsis"),
             imageUrl = json.getJSONObject("images").getJSONObject("jpg").getString("image_url"),
-            score = json.optDouble("score"),
-            episodes = json.optInt("episodes")
+            status = json.optString("status"),
+            genres = json.optJSONArray("genres")?.let { arr ->
+                List(arr.length()) { i -> arr.getJSONObject(i).getString("name") }
+            } ?: emptyList(),
+            year = json.optInt("year").takeIf { !json.isNull("year") },
+            type = json.optString("type").takeIf { it.isNotBlank() },
+            aired = json.optJSONObject("aired")?.let { airedObj ->
+                val from = airedObj.optString("from")?.takeIf { it.isNotBlank() }
+                val to = airedObj.optString("to")?.takeIf { it.isNotBlank() }
+                if (from != null && to != null && from != to) "$from a $to" else from ?: to
+            },
+            duration = json.optString("duration").takeIf { it.isNotBlank() },
+            rating = json.optString("rating").takeIf { it.isNotBlank() }
         )
     }
 
     suspend fun getCharacters(id: Int): List<Character> = withContext(Dispatchers.IO) {
         val url = "https://api.jikan.moe/v4/anime/$id/characters"
-        val response = URL(url).readText()
-        val json = JSONObject(response)
-        val data = json.getJSONArray("data")
-        List(data.length()) { i ->
-            val item = data.getJSONObject(i)
-            Character(
-                id = item.getInt("mal_id"),
-                name = item.getString("name"),
-                imageUrl = item.getJSONObject("images").getJSONObject("jpg").getString("image_url")
-            )
+        try {
+            val response = URL(url).readText()
+            val json = JSONObject(response)
+            val data = json.getJSONArray("data")
+            List(data.length()) { i ->
+                val item = data.getJSONObject(i)
+                Character(
+                    id = item.getInt("mal_id"),
+                    name = item.getString("name"),
+                    imageUrl = item.getJSONObject("images").getJSONObject("jpg").getString("image_url")
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
         }
     }
 
     suspend fun getEpisodes(id: Int): List<Episode> = withContext(Dispatchers.IO) {
         val url = "https://api.jikan.moe/v4/anime/$id/episodes"
-        val response = URL(url).readText()
-        val json = JSONObject(response)
-        val data = json.getJSONArray("data")
-        List(data.length()) { i ->
-            val item = data.getJSONObject(i)
-            Episode(
-                id = item.getInt("mal_id"),
-                title = item.getString("title"),
-                aired = item.optString("aired")
-            )
+        try {
+            val response = URL(url).readText()
+            val json = JSONObject(response)
+            val data = json.getJSONArray("data")
+            List(data.length()) { i ->
+                val item = data.getJSONObject(i)
+                Episode(
+                    id = item.getInt("mal_id"),
+                    title = item.getString("title"),
+                    aired = item.optString("aired")
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
         }
     }
 
     suspend fun getRecommendations(id: Int): List<Recommendation> = withContext(Dispatchers.IO) {
         val url = "https://api.jikan.moe/v4/anime/$id/recommendations"
-        val response = URL(url).readText()
-        val json = JSONObject(response)
-        val data = json.getJSONArray("data")
-        List(data.length()) { i ->
-            val item = data.getJSONObject(i)
-            Recommendation(
-                id = item.getInt("mal_id"),
-                title = item.getString("title"),
-                imageUrl = item.getJSONObject("images").getJSONObject("jpg").getString("image_url")
-            )
+        try {
+            val response = URL(url).readText()
+            val json = JSONObject(response)
+            val data = json.getJSONArray("data")
+            List(data.length()) { i ->
+                val item = data.getJSONObject(i)
+                Recommendation(
+                    id = item.getInt("mal_id"),
+                    title = item.getString("title"),
+                    imageUrl = item.getJSONObject("images").getJSONObject("jpg").getString("image_url")
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
         }
     }
 }
