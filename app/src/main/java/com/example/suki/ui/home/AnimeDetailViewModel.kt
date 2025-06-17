@@ -25,6 +25,10 @@ class AnimeDetailViewModel(private val repository: AnimeRepositoryImpl = AnimeRe
     private val _recommendations = MutableStateFlow<List<Recommendation>>(emptyList())
     val recommendations: StateFlow<List<Recommendation>> = _recommendations
 
+    // 👇 Nuevo: Estado de carga de episodios
+    private val _isLoadingEpisodes = MutableStateFlow(false)
+    val isLoadingEpisodes: StateFlow<Boolean> = _isLoadingEpisodes
+
     fun fetchAnimeDetail(id: Int) {
         viewModelScope.launch {
             _animeDetail.value = repository.getAnimeDetail(id)
@@ -39,7 +43,14 @@ class AnimeDetailViewModel(private val repository: AnimeRepositoryImpl = AnimeRe
 
     fun fetchEpisodes(id: Int) {
         viewModelScope.launch {
-            _episodes.value = repository.getEpisodes(id)
+            _isLoadingEpisodes.value = true // Inicia carga
+            try {
+                _episodes.value = repository.getEpisodes(id)
+            } catch (e: Exception) {
+                _episodes.value = emptyList() // O manejar con un snackbar, etc.
+            } finally {
+                _isLoadingEpisodes.value = false // Termina carga
+            }
         }
     }
 
@@ -49,3 +60,4 @@ class AnimeDetailViewModel(private val repository: AnimeRepositoryImpl = AnimeRe
         }
     }
 }
+

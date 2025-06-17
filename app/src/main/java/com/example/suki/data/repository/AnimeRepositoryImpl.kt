@@ -30,31 +30,37 @@ class AnimeRepositoryImpl : AnimeRepository {
         }
     }
 
-    suspend fun getAnimeDetail(id: Int): AnimeDetail = withContext(Dispatchers.IO) {
+    suspend fun getAnimeDetail(id: Int): AnimeDetail? = withContext(Dispatchers.IO) {
         val url = "https://api.jikan.moe/v4/anime/$id"
-        val response = URL(url).readText()
-        val json = JSONObject(response).getJSONObject("data")
-        AnimeDetail(
-            title = json.getString("title"),
-            score = json.optDouble("score").toFloat().takeIf { !json.isNull("score") },
-            episodes = json.optInt("episodes"),
-            synopsis = json.getString("synopsis"),
-            imageUrl = json.getJSONObject("images").getJSONObject("jpg").getString("image_url"),
-            status = json.optString("status"),
-            genres = json.optJSONArray("genres")?.let { arr ->
-                List(arr.length()) { i -> arr.getJSONObject(i).getString("name") }
-            } ?: emptyList(),
-            year = json.optInt("year").takeIf { !json.isNull("year") },
-            type = json.optString("type").takeIf { it.isNotBlank() },
-            aired = json.optJSONObject("aired")?.let { airedObj ->
-                val from = airedObj.optString("from")?.takeIf { it.isNotBlank() }
-                val to = airedObj.optString("to")?.takeIf { it.isNotBlank() }
-                if (from != null && to != null && from != to) "$from a $to" else from ?: to
-            },
-            duration = json.optString("duration").takeIf { it.isNotBlank() },
-            rating = json.optString("rating").takeIf { it.isNotBlank() }
-        )
+        try {
+            val response = URL(url).readText()
+            val json = JSONObject(response).getJSONObject("data")
+            AnimeDetail(
+                title = json.getString("title"),
+                score = json.optDouble("score").toFloat().takeIf { !json.isNull("score") },
+                episodes = json.optInt("episodes"),
+                synopsis = json.getString("synopsis"),
+                imageUrl = json.getJSONObject("images").getJSONObject("jpg").getString("image_url"),
+                status = json.optString("status"),
+                genres = json.optJSONArray("genres")?.let { arr ->
+                    List(arr.length()) { i -> arr.getJSONObject(i).getString("name") }
+                } ?: emptyList(),
+                year = json.optInt("year").takeIf { !json.isNull("year") },
+                type = json.optString("type").takeIf { it.isNotBlank() },
+                aired = json.optJSONObject("aired")?.let { airedObj ->
+                    val from = airedObj.optString("from")?.takeIf { it.isNotBlank() }
+                    val to = airedObj.optString("to")?.takeIf { it.isNotBlank() }
+                    if (from != null && to != null && from != to) "$from a $to" else from ?: to
+                },
+                duration = json.optString("duration").takeIf { it.isNotBlank() },
+                rating = json.optString("rating").takeIf { it.isNotBlank() }
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null // O lanza un error personalizado si prefieres
+        }
     }
+
 
     suspend fun getCharacters(id: Int): List<Character> = withContext(Dispatchers.IO) {
         val url = "https://api.jikan.moe/v4/anime/$id/characters"

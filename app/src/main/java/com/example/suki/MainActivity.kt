@@ -55,10 +55,15 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("home") {
                             HomeScreen(
-                                onAnimeClick = { id -> /* ir a detalles */ },
-                                onLogout = { navController.navigate("login") { popUpTo("home") { inclusive = true } } }
+                                onAnimeClick = { id ->
+                                    navController.navigate("detail/$id")
+                                },
+                                onLogout = {
+                                    navController.navigate("login") {
+                                        popUpTo("home") { inclusive = true }
+                                    }
+                                }
                             )
-
                         }
                         composable("detail/{animeId}") { backStackEntry ->
                             val animeId = backStackEntry.arguments?.getString("animeId")?.toIntOrNull() ?: 0
