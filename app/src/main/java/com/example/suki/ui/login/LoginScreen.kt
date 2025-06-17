@@ -1,5 +1,6 @@
 package com.example.suki.ui.login
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -12,14 +13,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.suki.R
+import com.example.suki.data.UserPreferences
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit) {
+fun LoginScreen(
+    onLoginSuccess: () -> Unit,
+    onRegisterClick: () -> Unit
+) {
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var error by remember { mutableStateOf(false) }
@@ -45,7 +54,9 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit) {
                 modifier = Modifier.size(60.dp)
             )
         }
+
         Spacer(modifier = Modifier.height(32.dp))
+
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
@@ -62,7 +73,9 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit) {
             ),
             modifier = Modifier.fillMaxWidth(0.8f)
         )
+
         Spacer(modifier = Modifier.height(16.dp))
+
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -80,11 +93,18 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit) {
             ),
             modifier = Modifier.fillMaxWidth(0.8f)
         )
+
         Spacer(modifier = Modifier.height(16.dp))
+
         Button(
             onClick = {
-                if (username == "admin" && password == "admin") {
+                val savedUsername = UserPreferences.getUsername(context)
+                val savedPassword = UserPreferences.getPassword(context)
+
+                if (username == savedUsername && password == savedPassword) {
                     error = false
+                    // Guardar sesión activa si deseas
+                    sharedPreferences.edit().putBoolean("is_logged_in", true).apply()
                     onLoginSuccess()
                 } else {
                     error = true
@@ -100,6 +120,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit) {
         ) {
             Text("Ingresar")
         }
+
         if (error) {
             Text(
                 text = "Usuario o contraseña incorrectos",
@@ -108,14 +129,14 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit) {
                 modifier = Modifier.padding(top = 8.dp)
             )
         }
+
         Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "¿Aun no tienes cuenta?",
-            color = Color.White,
-            fontSize = 15.sp
-        )
+
+        Text("¿Aún no tienes cuenta?", color = Color.White, fontSize = 15.sp)
+
         TextButton(onClick = onRegisterClick) {
-            Text("Registrate", color = Color(0xFF7B6CF6))
+            Text("Regístrate", color = Color(0xFF7B6CF6))
         }
     }
 }
+

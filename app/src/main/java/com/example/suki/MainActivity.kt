@@ -1,5 +1,6 @@
 package com.example.suki
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,27 +22,43 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Verificar si ya hay sesión iniciada
+        val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        val isLoggedIn = sharedPreferences.getBoolean("is_logged_in", false)
+
         setContent {
             SukiTheme {
                 val navController = rememberNavController()
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "login"
+                        startDestination = if (isLoggedIn) "home" else "login"
                     ) {
                         composable("login") {
                             LoginScreen(
-                                onLoginSuccess = { navController.navigate("home") { popUpTo("login") { inclusive = true } } },
-                                onRegisterClick = { navController.navigate("register") }
+                                onLoginSuccess = {
+                                    navController.navigate("home") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                },
+                                onRegisterClick = {
+                                    navController.navigate("register")
+                                }
                             )
                         }
                         composable("register") {
-                            RegisterScreen(onBackToLogin = { navController.popBackStack() })
+                            RegisterScreen(
+                                onBackToLogin = { navController.popBackStack() },
+                                onRegisterSuccess = { navController.navigate("home") } // o a donde desees
+                            )
                         }
                         composable("home") {
-                            HomeScreen(onAnimeClick = { animeId ->
-                                navController.navigate("detail/$animeId")
-                            })
+                            HomeScreen(
+                                onAnimeClick = { id -> /* ir a detalles */ },
+                                onLogout = { navController.navigate("login") { popUpTo("home") { inclusive = true } } }
+                            )
+
                         }
                         composable("detail/{animeId}") { backStackEntry ->
                             val animeId = backStackEntry.arguments?.getString("animeId")?.toIntOrNull() ?: 0

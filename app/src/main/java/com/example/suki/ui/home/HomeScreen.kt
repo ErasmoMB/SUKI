@@ -14,15 +14,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.suki.data.UserPreferences
 import com.example.suki.data.model.Anime
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel(), onAnimeClick: (Int) -> Unit) {
+fun HomeScreen(
+    viewModel: HomeViewModel = viewModel(),
+    onAnimeClick: (Int) -> Unit,
+    onLogout: () -> Unit // <-- nuevo parámetro
+) {
     val animes by viewModel.animes.collectAsState()
     var search by remember { mutableStateOf("") }
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val username = remember { UserPreferences.getUsername(context) }
 
     Column(
         modifier = Modifier
@@ -35,9 +45,31 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel(), onAnimeClick: (Int) -> Un
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { /* TODO: abrir menú */ }) {
-                Icon(Icons.Filled.Menu, contentDescription = "Menu", tint = Color.White)
+            Box {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(Icons.Filled.Menu, contentDescription = "Menu", tint = Color.White)
+                }
+
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false },
+                    modifier = Modifier.background(Color(0xFF23234A))
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("👤 $username", color = Color.White) },
+                        onClick = { menuExpanded = false }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("🚪 Cerrar sesión", color = Color.Red) },
+                        onClick = {
+                            UserPreferences.logout(context)
+                            menuExpanded = false
+                            onLogout()
+                        }
+                    )
+                }
             }
+
             TextField(
                 value = search,
                 onValueChange = {
@@ -56,7 +88,9 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel(), onAnimeClick: (Int) -> Un
                 )
             )
         }
+
         Spacer(modifier = Modifier.height(8.dp))
+
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
             modifier = Modifier.padding(8.dp),

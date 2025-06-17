@@ -44,6 +44,7 @@ android {
 }
 
 dependencies {
+// DataStore Preferences
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -79,6 +80,8 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.material)
     implementation("androidx.compose.material:material-icons-extended:1.5.0")
+    implementation(libs.datastore.preferences)
+
 
     // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")

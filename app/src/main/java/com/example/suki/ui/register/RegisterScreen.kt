@@ -8,11 +8,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.suki.data.UserPreferences
 
 @Composable
-fun RegisterScreen(onBackToLogin: () -> Unit) {
+fun RegisterScreen(
+    onBackToLogin: () -> Unit,
+    onRegisterSuccess: () -> Unit // Esto te lleva al Home, por ejemplo
+) {
+    val context = LocalContext.current
+
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -92,9 +99,18 @@ fun RegisterScreen(onBackToLogin: () -> Unit) {
             ),
             modifier = Modifier.fillMaxWidth(0.8f)
         )
+
         Spacer(modifier = Modifier.height(24.dp))
         Button(
-            onClick = { /* Solo vista, no acción */ },
+            onClick = {
+                if (username.isNotBlank() && email.isNotBlank() &&
+                    password == confirmPassword && password.isNotBlank()) {
+
+                    UserPreferences.saveUser(context, username, email, password) // ✅
+
+                    onRegisterSuccess()
+                }
+            },
             shape = RoundedCornerShape(20.dp),
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = Color.Transparent,
@@ -105,6 +121,7 @@ fun RegisterScreen(onBackToLogin: () -> Unit) {
         ) {
             Text("Registrar")
         }
+
         Spacer(modifier = Modifier.height(24.dp))
         TextButton(onClick = onBackToLogin) {
             Text("Volver a Ingresar", color = Color(0xFF7B6CF6))
